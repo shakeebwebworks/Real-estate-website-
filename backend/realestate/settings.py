@@ -1,12 +1,13 @@
-"""Django settings for REALTY (development setup, SQLite)."""
+"""Django settings for REALTY."""
+import dj_database_url
+from decouple import Csv, config
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Development only. Change this and set DEBUG = False before deploying.
-SECRET_KEY = "dev-only-change-me-before-deploying"
-DEBUG = True
-ALLOWED_HOSTS = []
+SECRET_KEY = config("SECRET_KEY", default="dev-only-change-me-before-deploying")
+DEBUG = config("DEBUG", default=True, cast=bool)
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost", cast=Csv())
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -23,6 +24,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",  # keep this first
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # serves static files in production
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -51,12 +53,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "realestate.wsgi.application"
 
-# SQLite for development. MySQL config is at the bottom of this file.
+# SQLite on your laptop. On Railway, DATABASE_URL is set automatically and this switches to Postgres.
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -72,28 +74,24 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+}
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# React dev server (Vite) is allowed to call this API
-CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
+# Your Vercel frontend address goes here once you have it (comma-separated if more than one)
+CORS_ALLOWED_ORIGINS = config(
+    "CORS_ALLOWED_ORIGINS",
+    default="http://localhost:5173,http://127.0.0.1:5173",
+    cast=Csv(),
+)
+CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 6,
 }
-
-# --- MySQL (use later for production) ---
-# 1. pip install mysqlclient
-# 2. Replace DATABASES above with:
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.mysql",
-#         "NAME": "realty_db",
-#         "USER": "root",
-#         "PASSWORD": "your-password",
-#         "HOST": "127.0.0.1",
-#         "PORT": "3306",
-#     }
-# }
