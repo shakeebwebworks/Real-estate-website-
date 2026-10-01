@@ -8,6 +8,5 @@ urlpatterns = [
     path("api/", include("properties.urls")),
 ]
 
-# Serve uploaded images while developing
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Serve uploaded property/agent photos (always, not just in DEBUG)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
