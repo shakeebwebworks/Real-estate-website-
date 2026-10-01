@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import PropertyCard from "../components/PropertyCard.jsx";
-import { toCard } from "../api.js";
+import { toCard, API_BASE } from "../api.js";
 import useTitle from "../hooks/useTitle.js";
 
 const AVATAR = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=b08d57&color=fff&size=300`;
@@ -15,17 +15,17 @@ export default function AgentDetail() {
   useEffect(() => {
     window.scrollTo(0, 0);
     Promise.all([
-      fetch(`/api/agents/${id}/`).then((r) => { if (!r.ok) throw new Error(); return r.json(); }),
-      fetch(`/api/agents/${id}/properties/`).then((r) => { if (!r.ok) throw new Error(); return r.json(); }),
+      fetch(`${API_BASE}/api/agents/${id}/`).then((r) => { if (!r.ok) throw new Error(); return r.json(); }),
+      fetch(`${API_BASE}/api/agents/${id}/properties/`).then((r) => { if (!r.ok) throw new Error(); return r.json(); }),
     ])
       .then(([agentData, props]) => { setAgent(agentData); setProperties(props.map(toCard)); })
       .catch(() => setError("We couldn't find this agent."));
   }, [id]);
 
+  useTitle(agent?.name, agent?.biography?.slice(0, 150));
+
   if (error) return <section className="page-hero slim"><div className="container"><h1>{error}</h1><Link to="/agents/" className="btn btn-accent mt-3">Back to Agents</Link></div></section>;
   if (!agent) return <section className="page-hero slim"><div className="container"><h1>Loading...</h1></div></section>;
-
-  useTitle(agent.name, agent.biography?.slice(0, 150));
 
   return (
     <>

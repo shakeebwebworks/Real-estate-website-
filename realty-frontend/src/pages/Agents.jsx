@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import useTitle from "../hooks/useTitle.js";
 import { Link } from "react-router-dom";
+import useTitle from "../hooks/useTitle.js";
+import { API_BASE } from "../api.js";
 
 const AVATAR = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=b08d57&color=fff&size=300`;
 
@@ -11,10 +12,10 @@ export default function Agents() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("/api/agents/")
+    fetch(`${API_BASE}/api/agents/`)
       .then((res) => { if (!res.ok) throw new Error(); return res.json(); })
       .then(setAgents)
-      .catch(() => setError("Could not load agents. Is the Django server running?"))
+      .catch(() => setError("Could not load agents. Is the backend running?"))
       .finally(() => setLoading(false));
   }, []);
 
