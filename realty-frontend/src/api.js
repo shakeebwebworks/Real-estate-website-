@@ -1,4 +1,5 @@
-// Talks to the Django API. Vite forwards /api to http://127.0.0.1:8000
+// Talks to the live Django API on Railway.
+const API_BASE = "https://real-estate-website-production-f8a3.up.railway.app";
 
 export function formatPrice(price, status) {
   let text;
@@ -10,7 +11,6 @@ export function formatPrice(price, status) {
 
 export const PLACEHOLDER = "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=900&q=80";
 
-// Turns an API property into the shape PropertyCard expects
 export function toCard(p) {
   return {
     id: p.id,
@@ -28,22 +28,20 @@ export function toCard(p) {
 
 export async function fetchProperties(params) {
   const clean = Object.fromEntries(Object.entries(params).filter(([, v]) => v !== "" && v != null));
-  const res = await fetch(`/api/properties/?${new URLSearchParams(clean)}`);
+  const res = await fetch(`${API_BASE}/api/properties/?${new URLSearchParams(clean)}`);
   if (!res.ok) throw new Error("Could not load properties");
   const data = await res.json();
   return { count: data.count, items: data.results.map(toCard) };
 }
 
-// One property with all images and its agent
 export async function fetchProperty(slug) {
-  const res = await fetch(`/api/properties/${slug}/`);
+  const res = await fetch(`${API_BASE}/api/properties/${slug}/`);
   if (!res.ok) throw new Error("Property not found");
   return res.json();
 }
 
-// kind is "inquiries" or "appointments"
 export async function submitForm(kind, data) {
-  const res = await fetch(`/api/${kind}/`, {
+  const res = await fetch(`${API_BASE}/api/${kind}/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -51,3 +49,5 @@ export async function submitForm(kind, data) {
   if (!res.ok) throw new Error("Could not send. Please check your details.");
   return res.json();
 }
+
+export { API_BASE };
