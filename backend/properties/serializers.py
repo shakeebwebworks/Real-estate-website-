@@ -3,9 +3,16 @@ from .models import Agent, Appointment, Inquiry, Property, PropertyImage
 
 
 class PropertyImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = PropertyImage
         fields = ["id", "image"]
+
+    def get_image(self, obj):
+        request = self.context.get("request")
+        url = request.build_absolute_uri(obj.image.url) if request else obj.image.url
+        return url.replace("http://", "https://", 1)
 
 
 class AgentSerializer(serializers.ModelSerializer):
@@ -33,7 +40,8 @@ class PropertyListSerializer(serializers.ModelSerializer):
         if not first:
             return None
         request = self.context.get("request")
-        return request.build_absolute_uri(first.image.url) if request else first.image.url
+        url = request.build_absolute_uri(first.image.url) if request else first.image.url
+        return url.replace("http://", "https://", 1)
 
 
 class PropertyDetailSerializer(PropertyListSerializer):
