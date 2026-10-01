@@ -70,10 +70,10 @@ export default function PropertyDetail() {
       .catch(() => setError("We couldn't find this property."));
   }, [slug]);
 
+  useTitle(p?.title, p?.description?.slice(0, 150));
+
   if (error) return <section className="page-hero slim"><div className="container"><h1>{error}</h1><Link to="/properties/" className="btn btn-accent mt-3">Back to Properties</Link></div></section>;
   if (!p) return <section className="page-hero slim"><div className="container"><h1>Loading...</h1></div></section>;
-
-  useTitle(p.title, p.description?.slice(0, 150));
 
   const images = p.images.length ? p.images.map((i) => i.image) : [PLACEHOLDER];
   const facts = [["bi-door-closed", `${p.bedrooms} Bedrooms`], ["bi-droplet", `${p.bathrooms} Bathrooms`], ["bi-aspect-ratio", `${p.area.toLocaleString("en-IN")} sq.ft.`], ["bi-house", p.type_label]];
